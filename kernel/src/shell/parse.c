@@ -9,6 +9,8 @@ Command commands[] = {{"ls", cmd_ls},
                       {"loadkeys", cmd_loadkeys},
                       {"mkdir", cmd_mkdir},
                       {"rm", cmd_rm},
+                      {"snake", cmd_snake},
+                      {"clear", cmd_clear},
                       {NULL, NULL}};
 
 void cmd_parse(char *cmd_buff, u8 *buff_cnt) {

@@ -42,3 +42,5 @@ char translate(u8 scancode) {
     return a_layout(scancode, 0);
   }
 }
+
+char game_translate(u8 scancode) { return qwerty(scancode, 0); }

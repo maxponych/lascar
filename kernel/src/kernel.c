@@ -1,11 +1,13 @@
 #include "kernel.h"
 
 void kmain() {
-  println("Welcome back to MinorOS");
   fs_init();
   kb_init();
+  clear_screen();
+  println("Welcome back to laskar");
   char comm_buff[80];
   u8 comm_buff_cnt = 0;
+  print("$> ");
   while (1) {
     u8 in = kb_read();
     u8 c = translate(in);
@@ -21,6 +23,7 @@ void kmain() {
         }
 
         comm_buff_cnt = 0;
+        print("$> ");
         continue;
       }
       if (c == '\b') {
