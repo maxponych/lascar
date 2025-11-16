@@ -34,7 +34,7 @@ A basic but functional shell that parses and executes commands.
 - No scheduler
 - No dynamic memory allocation
 - VGA text mode only
-- No hardware interrupts (except timer for Snake)
+- No hardware interrupts
 - Missing commands (e.g., `rm`)
 
 ## License
