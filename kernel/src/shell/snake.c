@@ -104,6 +104,8 @@ void update_snake(char move, char prev) {
     snake[i][0] = snake[i - 1][0];
     snake[i][1] = snake[i - 1][1];
   }
+  snake[snake_length][0] = 0;
+  snake[snake_length][1] = 0;
 
   if (move == 'w' || move == 'W') {
     snake[0][1] = snake[0][1] - 1;
@@ -144,6 +146,7 @@ void cmd_snake(char *args) {
   char prev = ' ';
   char move = 'd';
   u64 next = tick_update() + tick;
+  snake_length = 8;
   init_snake(snake_length);
   set_apple();
 
