@@ -1,16 +1,41 @@
 [root]
 name = "laskar"
 description = "My OS"
-ignore = [".git", ".cache", "*.bin", "*.elf", "*.o", "os.img", "os.vdi", "libk.a", "bpb.bin", "stage1_patched.bin", "compile_commands.json"]
+ignore = [
+    ".denali",
+    ".git",
+    ".cache",
+    "*.bin",
+    "*.elf",
+    "*.o",
+    "os.img",
+    "os.vdi",
+    "libk.a",
+    "bpb.bin",
+    "stage1_patched.bin",
+    "compile_commands.json",
+]
 
-[kernel]
-path = "/home/max/projects/laskar/kernel"
-ignore = ["*.bin", "*.elf", "*.o", "src/*.o", "src/shell/*.o", "src/layouts/*.o"]
+[libk]
+path = "/home/max/projects/laskar/libk"
+ignore = [
+    "*.bin",
+    "*.elf",
+    "*.o",
+    "src/*.o",
+]
 
 [drivers]
 path = "/home/max/projects/laskar/drivers"
 ignore = ["*.bin", "*.elf", "*.o", "src/*.o"]
 
-[libk]
-path = "/home/max/projects/laskar/libk"
-ignore = ["*.bin", "*.elf", "*.o", "src/*.o"]
+[kernel]
+path = "/home/max/projects/laskar/kernel"
+ignore = [
+    "*.bin",
+    "*.elf",
+    "*.o",
+    "src/*.o",
+    "src/shell/*.o",
+    "src/layouts/*.o",
+]
