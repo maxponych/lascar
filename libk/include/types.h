@@ -10,6 +10,21 @@ typedef signed short i16;
 typedef signed int i32;
 typedef signed long long i64;
 
+typedef enum {
+  PixelRedGreenBlueReserved8BitPerColor = 0,
+  PixelBlueGreenRedReserved8BitPerColor = 1,
+  PixelBitMask = 2,
+  PixelBltOnly = 3,
+} PixelFormat;
+
+typedef struct {
+  u64 width;
+  u64 height;
+  u64 pitch;
+  u32 *framebuffer;
+  PixelFormat pixel_format;
+} VBE;
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif

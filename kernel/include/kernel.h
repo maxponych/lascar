@@ -5,4 +5,4 @@
 #include "shell.h"
 #include "types.h"
 
-void kmain() __attribute__((section(".text.start")));
+void kmain(VBE *vbe) __attribute__((section(".text.start")));

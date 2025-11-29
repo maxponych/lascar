@@ -8,13 +8,9 @@ kernel/src/**/*.o
 kernel/src/*.o
 libk/src/*.o
 drivers/src/*.o
-bootloader/*.bin
-bootloader/*.elf
-bootloader/*.o
-bootloader/bpb.bin
-bootloader/stage1_patched.bin
-bootloader/parser.elf
-bootloader/parser.bin
+bootloader/target
+bootloader/flake.nix
+bootloader/flake.lock
 compile_commands.json
 .cache
 .denali.toml

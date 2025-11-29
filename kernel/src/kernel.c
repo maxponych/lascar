@@ -1,8 +1,10 @@
 #include "kernel.h"
+#include "print.h"
 
-void kmain() {
+void kmain(VBE *vbe) {
   fs_init();
   kb_init();
+  init_screen(vbe);
   clear_screen();
   println("Welcome back to laskar");
   char comm_buff[80];

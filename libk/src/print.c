@@ -1,76 +1,102 @@
 #include "print.h"
+#include "font.h"
 
-u16 cursor = 0;
+static VBE *vbe = NULL;
+static u32 fg = 0x00FFFFFF;
+static u32 bg = 0x00000000;
+static u64 pos_x = 0;
+static u64 pos_y = 0;
 
-void update_hw_cursor() {
-  outb(0x3D4, 0x0F);
-  outb(0x3D5, (u8)(cursor & 0xFF));
-  outb(0x3D4, 0x0E);
-  outb(0x3D5, (u8)((cursor >> 8) & 0xFF));
-}
-
-void scroll_up() {
-  volatile u16 *vga = (u16 *)0xB8000;
-
-  for (int y = 1; y < 25; y++) {
-    for (int x = 0; x < 80; x++) {
-      vga[(y - 1) * 80 + x] = vga[y * 80 + x];
-    }
-  }
-
-  for (int x = 0; x < 80; x++) {
-    vga[(25 - 1) * 80 + x] = ' ' | (0x07 << 8);
-  }
+void init_screen(VBE *pointer) {
+  vbe = pointer;
+  pos_x = 0;
+  pos_y = 0;
 }
 
 void clear_screen() {
-  cursor = 0;
-  volatile u16 *vga = (u16 *)0xB8000;
-  u16 blank = (0x0F << 8) | ' ';
-
-  for (int i = 0; i < 80 * 25; i++) {
-    vga[i] = blank;
+  for (u64 i = 0; i < vbe->height * vbe->width; i++) {
+    vbe->framebuffer[i] = bg;
   }
-  update_hw_cursor();
+
+  pos_x = 0;
+  pos_y = 0;
 }
 
-void printc(const char c) {
-  volatile u16 *vga = (u16 *)0xB8000;
-  int col = cursor % 80;
-  int row = cursor / 80;
+void put_pixel(const VBE *vbe, u64 x, u64 y, u32 color) {
+  if (x >= vbe->width || y >= vbe->height)
+    return;
+  vbe->framebuffer[y * vbe->pitch + x] = color;
+}
+
+void print_char(char c) {
+  if (c > 127)
+    c = '?';
+
+  const u8 *glyph = font8x8[c];
+  u64 screen_x = pos_x * 8;
+  u64 screen_y = pos_y * 8;
+
+  for (u64 row = 0; row < 8; row++) {
+    for (u64 col = 0; col < 8; col++) {
+      u32 color = (glyph[row] & (1 << col)) ? fg : bg;
+      put_pixel(vbe, screen_x + col, screen_y + row, color);
+    }
+  }
+}
+
+static void scroll_up() {
+  u64 lines_to_move = (vbe->height / 8) - 1;
+
+  for (u64 y = 0; y < lines_to_move * 8; y++) {
+    for (u64 x = 0; x < vbe->width; x++) {
+      u32 pixel = vbe->framebuffer[(y + 8) * vbe->pitch + x];
+      vbe->framebuffer[y * vbe->pitch + x] = pixel;
+    }
+  }
+
+  for (u64 y = lines_to_move * 8; y < vbe->height; y++) {
+    for (u64 x = 0; x < vbe->width; x++) {
+      vbe->framebuffer[y * vbe->pitch + x] = bg;
+    }
+  }
+}
+
+void printc(char c) {
+  u64 max_cols = vbe->width / 8;
+  u64 max_rows = vbe->height / 8;
+
   switch (c) {
   case '\n':
-    if ((cursor / 80) >= 25) {
-      scroll_up();
-      cursor -= 80;
-    }
-    cursor = ((cursor / 80) + 1) * 80;
+    pos_x = 0;
+    pos_y++;
     break;
   case '\r':
-    cursor -= col;
+    pos_x = 0;
     break;
-
   case '\t':
-    cursor += 8 - (col % 8);
+    pos_x += 4 - (pos_x % 4);
     break;
-
   case '\b':
-    if (cursor > 0)
-      cursor--;
-    vga[cursor] = (u16)' ' | ((u16)0x07 << 8);
+    if (pos_x > 0) {
+      pos_x--;
+      print_char(' ');
+    }
     break;
-
   default:
-    vga[cursor++] = (u16)c | ((u16)0x07 << 8);
+    print_char(c);
+    pos_x++;
     break;
   }
 
-  if ((cursor / 80) >= 25) {
-    scroll_up();
-    cursor -= 80;
+  if (pos_x >= max_cols) {
+    pos_x = 0;
+    pos_y++;
   }
 
-  update_hw_cursor();
+  if (pos_y >= max_rows) {
+    scroll_up();
+    pos_y = max_rows - 1;
+  }
 }
 
 void print(const char *str) {
@@ -82,31 +108,22 @@ void print(const char *str) {
 
 void println(const char *str) {
   print(str);
-  if ((cursor / 80) >= 25) {
-    scroll_up();
-    cursor -= 80;
-  }
-  cursor = ((cursor / 80) + 1) * 80;
-  update_hw_cursor();
+  printc('\n');
 }
 
 void printx(u8 val) {
   const char *hex = "0123456789ABCDEF";
-  char str[3] = {hex[(val >> 4) & 0xF], hex[val & 0xF], '\0'};
-  print(str);
+  printc(hex[(val >> 4) & 0xF]);
+  printc(hex[val & 0xF]);
 }
 
 void printxln(u8 val) {
   printx(val);
-  if ((cursor / 80) >= 25) {
-    scroll_up();
-    cursor -= 80;
-  }
-  cursor = ((cursor / 80) + 1) * 80;
+  printc('\n');
 }
 
-void printnum(u8 n) {
-  char buf[4];
+void printnum(u64 n) {
+  char buf[21];
   int i = 0;
 
   if (n == 0) {
@@ -118,6 +135,7 @@ void printnum(u8 n) {
     buf[i++] = '0' + (n % 10);
     n /= 10;
   }
+
   for (int j = i - 1; j >= 0; j--) {
     printc(buf[j]);
   }

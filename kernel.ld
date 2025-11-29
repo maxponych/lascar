@@ -3,7 +3,7 @@ ENTRY(kmain)
 
 SECTIONS
 {
-    . = 0x20000;
+    . = 0x200000;
 
     .text.start : 
     { 

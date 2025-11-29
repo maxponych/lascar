@@ -9,7 +9,6 @@ Command commands[] = {{"ls", cmd_ls},
                       {"loadkeys", cmd_loadkeys},
                       {"mkdir", cmd_mkdir},
                       {"rm", cmd_rm},
-                      {"snake", cmd_snake},
                       {"clear", cmd_clear},
                       {NULL, NULL}};
 
